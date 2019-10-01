@@ -1,35 +1,34 @@
-# Berglas example using Cloud Build
+# BerglasとCloud Buildを使って
 
-## Before
+## Berglasなどのセットアップ
 
-* Auth
+* 認証
 
 ```bash
 gcloud auth application-default login
 ```
 
-
-* Install berglas for Mac
+* ローカルPCにberglasをインストールします（Mac）
 
 ```bash
 brew install berglas
 ```
 
-* Pull a official docker image
+* berglasの公式Dockerイメージを取得します
 
 ```bash
 docker pull gcr.io/berglas/berglas:latest
 ```
 
-* Export env variables
+* 環境変数を設定します
 
 ```bash
 export PROJECT_ID=[Your Project ID]
-export BUCKET_ID=[Your Preffered Bucke Name] # <- This bucket should not exist yet!
+export BUCKET_ID=[Your Preffered Bucke Name] # <- bucketは新しく作成するため、すでに存在する名前を設定してはダメ！
 export KMS_KEY=projects/${PROJECT_ID}/locations/global/keyRings/berglas/cryptoKeys/berglas-key
 ```
 
-* Enable GCP APIs
+* GCPのAPIを有効にします
 
 ```bash
 gcloud services enable --project ${PROJECT_ID} \
@@ -38,7 +37,7 @@ gcloud services enable --project ${PROJECT_ID} \
   storage-component.googleapis.com
 ```
 
-* Bootstrap
+* berglas環境を構築します
 
 ```bash
 $ berglas bootstrap --project $PROJECT_ID --bucket $BUCKET_ID
@@ -48,39 +47,36 @@ Successfully created berglas environment:
   KMS key: projects/[Your Project ID]/locations/global/keyRings/berglas/cryptoKeys/berglas-key
 ```
 
-![](7A1F0B6B-C2B2-4683-A68B-15D2C915223B.png)
+## DBのパスワードをberglas経由でDockerイメージに渡す例
 
-![](42D8C5A6-7688-4ED4-A282-4CA5B013760D.png)
-
-
-## Usage
-
-* Enable Cloud Build API
+* Cloud Build APIを有効にします
 
 ```bash
 gcloud services enable --project $PROJECT_ID cloudbuild.googleapis.com
 ```
 
-* Get Cloud Build service account email
+* Cloud Buildのサービスアカウントのemailを取得します
 
 ```bash
 PROJECT_NUMBER=$(gcloud projects describe ${PROJECT_ID} --format 'value(projectNumber)')
 export SA_EMAIL=${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com
 ```
 
-* Create a database password
+* DBパスワードをberglasに渡します
 
 ```bash
 $ berglas create ${BUCKET_ID}/db-pass "test1234" --key ${KMS_KEY}
 Successfully created secret [db-pass] with generation [xxxxxxxxxxxxxxx]
 ```
 
+作成者自身なのでもちろんDBパスワードに何が設定されているか見れます。
+
 ```bash
 $ berglas access ${BUCKET_ID}/db-pass
 test1234
 ```
 
-* Grant service account access to the secret
+* Cloud Buildのサービスアカウントに先程作成したsecretへのアクセス権を渡します
 
 ```bash
 $ berglas grant ${BUCKET_ID}/db-pass --member serviceAccount:${SA_EMAIL}
@@ -88,11 +84,7 @@ Successfully granted permission on [db-pass] to:
 - serviceAccount:xxxxxxxxxxxx@cloudbuild.gserviceaccount.com
 ```
 
-* Cloud Build
-
-```yaml
-TODO: not yet
-```
+* Cloud Buildで実行しててみます
 
 ```bash
 gcloud builds submit \
@@ -101,14 +93,15 @@ gcloud builds submit \
   .
 ```
 
-## Clean up!
+`test1234` というDBパスワードがechoされれば成功です!
+
+## 最後にsecretとして作成したDBパスワードを削除します
 
 ```bash
 berglas delete ${BUCKET_ID}/db-pass
 ```
 
-
 ## 参考資料
 
-- [GitHub - GoogleCloudPlatform/berglas: A tool for managing secrets on Google Cloud](https://github.com/GoogleCloudPlatform/berglas)
-- [berglas/examples/cloudbuild at master · GoogleCloudPlatform/berglas · GitHub](https://github.com/GoogleCloudPlatform/berglas/tree/master/examples/cloudbuild)
+* [GitHub - GoogleCloudPlatform/berglas: A tool for managing secrets on Google Cloud](https://github.com/GoogleCloudPlatform/berglas)
+* [berglas/examples/cloudbuild at master · GoogleCloudPlatform/berglas · GitHub](https://github.com/GoogleCloudPlatform/berglas/tree/master/examples/cloudbuild)
