@@ -1,0 +1,17 @@
+steps:
+- id: berglas
+  name: gcr.io/berglas/berglas
+  env:
+  - DB_PASS=berglas://${_BUCKET_ID}/db-pass?destination=/secrets/db-pass
+  args: ["exec", "--local", "--", "/bin/sh"]
+  volumes:
+  - name: secrets
+    path: /secrets
+
+- id: show-db-pass
+  name: launcher.gcr.io/google/ubuntu16_04
+  entrypoint: "/bin/cat"
+  args: ["/secrets/db-pass"]
+  volumes:
+  - name: secrets
+    path: /secrets
