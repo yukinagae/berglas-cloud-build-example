@@ -1,4 +1,10 @@
-# BerglasとCloud Buildを使って
+# BerglasとCloud Buildを使って秘密情報をセキュアにdeploy（できるかも）
+
+## デモ用に最初にやること
+
+```bash
+PS1="$ "
+```
 
 ## Berglasなどのセットアップ
 
@@ -26,6 +32,22 @@ docker pull gcr.io/berglas/berglas:latest
 export PROJECT_ID=[Your Project ID]
 export BUCKET_ID=[Your Preffered Bucke Name] # <- bucketは新しく作成するため、すでに存在する名前を設定してはダメ！
 export KMS_KEY=projects/${PROJECT_ID}/locations/global/keyRings/berglas/cryptoKeys/berglas-key
+```
+
+* berglas-cloud-build-sample
+
+```bash
+export PROJECT_ID=berglas-cloud-build-sample
+export BUCKET_ID=berglas-cloud-build-sample-bucket # <- bucketは新しく作成するため、すでに存在する名前を設定してはダメ！
+export KMS_KEY=projects/${PROJECT_ID}/locations/global/keyRings/berglas/cryptoKeys/berglas-key
+```
+
+確認してみる
+
+```bash
+echo $PROJECT_ID
+echo $BUCKET_ID
+echo $KMS_KEY
 ```
 
 * GCPのAPIを有効にします
@@ -60,6 +82,13 @@ gcloud services enable --project $PROJECT_ID cloudbuild.googleapis.com
 ```bash
 PROJECT_NUMBER=$(gcloud projects describe ${PROJECT_ID} --format 'value(projectNumber)')
 export SA_EMAIL=${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com
+```
+
+確認してみる
+
+```bash
+echo $PROJECT_NUMBER
+echo $SA_EMAIL
 ```
 
 * DBパスワードをberglasに渡します
