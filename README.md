@@ -104,7 +104,7 @@ gcloud builds submit \
 ## Clean up!
 
 ```bash
-berglas delete ${BUCKET_ID}/db_pass
+berglas delete ${BUCKET_ID}/db-pass
 ```
 
 
